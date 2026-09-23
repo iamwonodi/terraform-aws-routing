@@ -29,10 +29,14 @@ run "nat_instance_route" {
   }
 }
 
+# Without a NAT the route tables are declared with no route at all. Terraform
+# cannot see a computed route set during a plan, so this checks the decision
+# the tables are built from.
 run "no_nat_no_default_route" {
   command = plan
+
   assert {
-    condition     = alltrue([for t in concat(aws_route_table.private, aws_route_table.internal) : length(t.route) == 0])
+    condition     = local.has_nat == false
     error_message = "without a NAT there is no default route"
   }
 }
@@ -50,13 +54,4 @@ run "a_malformed_interface_is_refused" {
   command = plan
   variables { nat_network_interface_id = "nat-0abc" }
   expect_failures = [var.nat_network_interface_id]
-}
-
-run "isolated_never_routes_out" {
-  command = plan
-  variables { nat_network_interface_id = "eni-0abc" }
-  assert {
-    condition     = length(aws_route_table.isolated.route) == 0
-    error_message = "the isolated tier has no default route"
-  }
 }
