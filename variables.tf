@@ -39,6 +39,17 @@ variable "nat_gateway_strategy" {
   }
 }
 
+variable "nat_network_interface_id" {
+  description = "Network interface of a NAT instance that private and internal route tables send outbound traffic to, instead of a NAT Gateway. Use one or the other, not both."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.nat_network_interface_id == null || can(regex("^eni-[0-9a-f]+$", coalesce(var.nat_network_interface_id, "x")))
+    error_message = "nat_network_interface_id must be a network interface ID (eni-...)."
+  }
+}
+
 variable "public_subnet_ids" {
   description = "IDs of public subnets."
   type        = list(string)

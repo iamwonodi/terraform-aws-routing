@@ -30,5 +30,10 @@ resource "terraform_data" "validation" {
 
       error_message = "The per_az NAT strategy requires at least one NAT Gateway ID for every private and internal subnet/AZ."
     }
+
+    precondition {
+      condition     = !(length(var.nat_gateway_ids) > 0 && var.nat_network_interface_id != null)
+      error_message = "Set nat_gateway_ids or nat_network_interface_id, not both: a route table has one default route."
+    }
   }
 }
